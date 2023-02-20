@@ -1,3 +1,7 @@
+require('dotenv').config({
+  path: './dev.env'
+});
+const jwt = require('jsonwebtoken');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -86,9 +90,16 @@ app.post("/login", upload.none(), async (req, res) => {
   if (!(await bcrypt.compare(req.body.password, rows[0].password_hash))) {
     output.code = 402;
   } else {
+    output.token = jwt.sign({
+      sid: rows[0].sid,
+      account: rows[0].account,
+    }, process.env.JWT_SECRET_KEY);
     output.success = true;
     output.code = 200;
     output.error = "";
+    output.accountId=rows[0].sid
+    output.account = rows[0].account,
+
 
     req.session.admin = {
       sid: rows[0].sid,
