@@ -52,6 +52,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+
+
+app.use('/linepay',require('./modules/line'))
+
 app.use('/getmap',(async(req,res)=>{
   gamesql = 'SELECT `gamesName`,`gamesImages`,`gamesPrice`,`storeSid` FROM `games` WHERE 1'
   const [game]= await db.query(gamesql)
