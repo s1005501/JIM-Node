@@ -1,15 +1,15 @@
-require('dotenv').config({
-  path: './dev.env'
+require("dotenv").config({
+  path: "./dev.env",
 });
-const jwt = require('jsonwebtoken');
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const jwt = require("jsonwebtoken");
+var createError = require("http-errors");
+var express = require("express");
+var path = require("path");
+var cookieParser = require("cookie-parser");
+var logger = require("morgan");
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var indexRouter = require("./routes/index");
+var usersRouter = require("./routes/users");
 
 var app = express();
 
@@ -26,10 +26,10 @@ const upload = require("./modules/upload");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 const sessionStore = new MySQLStore({}, db);
-const bcrypt = require('bcrypt')
+const bcrypt = require("bcrypt");
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 
 app.use(
   session({
@@ -42,41 +42,104 @@ app.use(
     },
   })
 );
-app.use(logger('dev'));
+app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
+app.use("/", indexRouter);
+app.use("/users", usersRouter);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.get("/index", async (req, res) => {
+  const { litim } = req.query;
+  console.log(litim);
 
+  gamesql = `SELECT * FROM games 
+  JOIN gamesFeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid 
+  JOIN gamesFeature02 on  gamesFeature02 = gamesFeature02.gamesFeatureSid 
+  JOIN gamestime on gamesTime = gamestime.gamesTimeSid
+  JOIN store on games.storeSid= store.storeSid
+  WHERE 1 
+  ORDER BY gamesSid ASC
+  limit ${litim}`;
+  const [game] = await db.query(gamesql);
+  res.json(game);
+});
 
+app.get("/games", async (req, res) => {
+  // const {litim} =req.query
+  const {
+    searchKey = "",
+    city = "",
+    minLimit = 100,
+    difficulty = "",
+    type = "",
+    cash = 83727,
+    time = "",
+    other = "",
+    order = "gamesPrice",
+    searchSwitch = "ASC",
+  } = req.query;
+  console.log(req.query);
+  console.log(searchKey, city, minLimit, type, cash, time, other, searchSwitch);
 
-app.use('/linepay',require('./modules/line'))
+  gamesql = `SELECT * FROM games
+  JOIN gamesdifficulty on gamesDifficulty = gamesdifficulty.gamesDifficultySid
+  JOIN gamesfeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid
+  JOIN gamesfeature02 on gamesFeature02 = gamesFeature02.gamesFeatureSid
+  JOIN gamestime on gamesTime = gamestime.gamesTimeSid
+  JOIN gamessort on gamesSort = gamessort.gamesSortSid
+  JOIN store on games.storeSid= store.storeSid
+  WHERE gamesName LIKE '%${searchKey}%' AND store.storeCity LIKE '%${city}%'
+  AND gamesPeopleMin <= ${minLimit} AND gamesdifficulty.difficulty LIKE '%${difficulty}%'
+  AND gamesPrice <= ${cash} AND gamesfeature01.feature01 LIKE '%${type}%'
+  AND gamestime.Time LIKE '%${time}%'  AND gamessort.Sort LIKE '%${other}%' 
+  ORDER BY ${order} ${searchSwitch}`;
+  const [game] = await db.query(gamesql);
+  res.json(game);
+});
 
-app.use('/getmap',(async(req,res)=>{
-  gamesql = 'SELECT `gamesName`,`gamesImages`,`gamesPrice`,`storeSid` FROM `games` WHERE 1'
-  const [game]= await db.query(gamesql)
-  storesql ='SELECT `storeSid`,`storeName`,`storeMobile`,`storeCity`,`storeAddress`,`storelat`,`storelon`,`storeTime`,`storeRest`,`storeLogo` FROM `store` WHERE 1'
-  const [store]= await db.query(storesql)
+app.get("/gameSingle", async (req, res) => {
+  const {sid} =req.query
+  console.log(sid,12355)
+  gameSingleSql = `SELECT * FROM games
+  JOIN gamesdifficulty on gamesDifficulty = gamesdifficulty.gamesDifficultySid
+  JOIN gamesfeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid
+  JOIN gamesfeature02 on gamesFeature02 = gamesFeature02.gamesFeatureSid
+  JOIN gamestime on gamesTime = gamestime.gamesTimeSid
+  JOIN gamessort on gamesSort = gamessort.gamesSortSid
+  JOIN store on games.storeSid= store.storeSid
+  WHERE gamesSid = ${sid}
+  `
+  const [gameSingle] = await db.query(gameSingleSql)
+  res.json(gameSingle);
+});
 
-const merge = store.map((v,i)=>{
-  const filters = game.filter((e,i)=>{
-  if(v.storeSid === e.storeSid){
-    return {...e}
-  }
-})
-  return{...v,game:filters}
-})
-  res.json(merge)
-}))
+app.use("/linepay", require("./modules/line"));
 
+app.use("/getmap", async (req, res) => {
+  gamesql =
+    "SELECT `gamesName`,`gamesImages`,`gamesPrice`,`storeSid` FROM `games` WHERE 1";
+  const [game] = await db.query(gamesql);
+  storesql =
+    "SELECT `storeSid`,`storeName`,`storeMobile`,`storeCity`,`storeAddress`,`storelat`,`storelon`,`storeTime`,`storeRest`,`storeLogo` FROM `store` WHERE 1";
+  const [store] = await db.query(storesql);
 
-app.post('/post',upload.array('photos', 12),(req,res)=>{
-  res.json(req.files)
-})
+  const merge = store.map((v, i) => {
+    const filters = game.filter((e, i) => {
+      if (v.storeSid === e.storeSid) {
+        return { ...e };
+      }
+    });
+    return { ...v, game: filters };
+  });
+  res.json(merge);
+});
+
+app.post("/post", upload.array("photos", 12), (req, res) => {
+  res.json(req.files);
+});
 app.post("/login", upload.none(), async (req, res) => {
   const output = {
     success: false,
@@ -94,21 +157,22 @@ app.post("/login", upload.none(), async (req, res) => {
   if (!(await bcrypt.compare(req.body.password, rows[0].password_hash))) {
     output.code = 402;
   } else {
-    output.token = jwt.sign({
-      sid: rows[0].sid,
-      account: rows[0].account,
-    }, process.env.JWT_SECRET_KEY);
+    output.token = jwt.sign(
+      {
+        sid: rows[0].sid,
+        account: rows[0].account,
+      },
+      process.env.JWT_SECRET_KEY
+    );
     output.success = true;
     output.code = 200;
     output.error = "";
-    output.accountId=rows[0].sid
-    output.account = rows[0].account,
-
-
-    req.session.admin = {
-      sid: rows[0].sid,
-      account: rows[0].account,
-    };
+    output.accountId = rows[0].sid;
+    (output.account = rows[0].account),
+      (req.session.admin = {
+        sid: rows[0].sid,
+        account: rows[0].account,
+      });
   }
   res.json(output);
 });
@@ -117,19 +181,19 @@ app.get("/logout", (req, res) => {
   res.json(req.session);
 });
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = req.app.get("env") === "development" ? err : {};
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render("error");
 });
 
 module.exports = app;
