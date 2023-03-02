@@ -26,7 +26,7 @@ router
 
 .get('/:id',(req,res)=>{
     const {id}=req.params
-    console.log(id,'id',orders)
+    // console.log(id,'id',orders)
     const order = orders[id]
     order.orderId = parseInt(new Date().getTime()/1000)
     res.json(order)
@@ -34,7 +34,30 @@ router
 
 .post('/createOrder/:orderId',async(req,res)=>{
   const {orderId}  = req.params;
-  const order = orders[orderId]
+  const {sid,member,gamesid,people,cash,prod,time,date}=req.query
+  console.log(req.query)
+  const {data}=req.body
+  const {remark,name,tel,address,email,discount}=data
+  // console.log(remark,name,tel,address,email,discount)
+  console.log(data)
+  const order = {
+    amount: cash,
+    currency: 'TWD',
+    packages: [
+      {
+        id: sid,
+        amount: cash,
+        products: [
+          {
+            name: prod,
+            quantity: 1,
+            price: cash
+          }
+        ]
+      }
+    ],
+    orderId:orderId
+  }
   try{ 
     const linePayBody = {
     ...order,
@@ -63,6 +86,10 @@ const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`
 // res.json({url,linePayBody,headers})
 const linePayRes = await axios.post(url,linePayBody,{headers})
 if(linePayRes?.data?.returnCode === '0000'){
+  console.log(tel)
+
+  sql = `INSERT INTO order_summary(orderSid, memberSid, gameSid, checkPrice, checkQuantity, orderState, orderTime,orderDate, orderUsername, orderPhone, orderAdress, orderEmail, orderRemark, orderDiscount, create_at) VALUES (${orderId},${member},${gamesid},${cash},${people},'進行中','${time}','${date}','${name}','${tel}','${address}','${email}','${remark}',${discount},now())`
+ db.query(sql)
     console.log(linePayRes.data.info.paymentUrl.web)
     console.log('驗證成功')
     const linePayUrl = linePayRes.data.info.paymentUrl.web

@@ -53,7 +53,6 @@ app.use("/users", usersRouter);
 
 app.get("/index", async (req, res) => {
   const { litim } = req.query;
-  console.log(litim);
 
   gamesql = `SELECT * FROM games 
   JOIN gamesFeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid 
@@ -81,8 +80,6 @@ app.get("/games", async (req, res) => {
     order = "gamesPrice",
     searchSwitch = "ASC",
   } = req.query;
-  console.log(req.query);
-  console.log(searchKey, city, minLimit, type, cash, time, other, searchSwitch);
 
   gamesql = `SELECT * FROM games
   JOIN gamesdifficulty on gamesDifficulty = gamesdifficulty.gamesDifficultySid
@@ -102,7 +99,6 @@ app.get("/games", async (req, res) => {
 
 app.get("/gameSingle", async (req, res) => {
   const {sid} =req.query
-  console.log(sid,12355)
   gameSingleSql = `SELECT * FROM games
   JOIN gamesdifficulty on gamesDifficulty = gamesdifficulty.gamesDifficultySid
   JOIN gamesfeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid
@@ -116,11 +112,51 @@ app.get("/gameSingle", async (req, res) => {
   res.json(gameSingle);
 });
 
+app.get("/filterDate", async (req, res) => {
+  const {sid,date} =req.query
+  console.log(sid,date,6555)
+  filterDateSql = `SELECT * FROM order_summary WHERE 
+  gameSid = ${sid} AND orderDate LIKE '${date}'
+  `
+  const [filterDate] = await db.query(filterDateSql)
+  res.json(filterDate);
+});
+
+app.get('/orders',async(req,res)=>{
+  const {sid} = req.query
+  orderSql = `SELECT * FROM games
+  JOIN gamesdifficulty on gamesDifficulty = gamesdifficulty.gamesDifficultySid
+  JOIN gamesfeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid
+  JOIN gamesfeature02 on gamesFeature02 = gamesFeature02.gamesFeatureSid
+  JOIN gamestime on gamesTime = gamestime.gamesTimeSid
+  JOIN gamessort on gamesSort = gamessort.gamesSortSid
+  JOIN store on games.storeSid= store.storeSid
+  WHERE gamesSid = ${sid}`
+  const [orderData]=await db.query(orderSql)
+  res.json(orderData)
+})
+
+app.get('/discount',async(req,res)=>{
+  discountSql = `SELECT * FROM discount_detail WHERE 1`
+  const [discount] =await db.query(discountSql)
+   res.json(discount)
+})
+
+app.get('/ordercomplete',async(req,res)=>{
+  const {orderSid}=req.query
+  ordercompleteSql = `SELECT * FROM order_summary WHERE orderSid = ${orderSid}`
+  const [ordercomplete]=await db.query(ordercompleteSql)
+  res.json(ordercomplete)
+})
+
 app.use("/linepay", require("./modules/line"));
 
 app.use("/getmap", async (req, res) => {
   gamesql =
-    "SELECT `gamesName`,`gamesImages`,`gamesPrice`,`storeSid` FROM `games` WHERE 1";
+    `SELECT gamesSid,gamesName,gamesImages,gamesPrice,feature01,feature02,storeSid FROM games 
+    JOIN gamesfeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid
+    JOIN gamesfeature02 on gamesFeature02 = gamesFeature02.gamesFeatureSid
+     WHERE 1`;
   const [game] = await db.query(gamesql);
   storesql =
     "SELECT `storeSid`,`storeName`,`storeMobile`,`storeCity`,`storeAddress`,`storelat`,`storelon`,`storeTime`,`storeRest`,`storeLogo` FROM `store` WHERE 1";
