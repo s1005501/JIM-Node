@@ -88,7 +88,7 @@ const linePayRes = await axios.post(url,linePayBody,{headers})
 if(linePayRes?.data?.returnCode === '0000'){
   console.log(tel)
 
-  sql = `INSERT INTO order_summary(orderSid, memberSid, gameSid, checkPrice, checkQuantity, orderState, orderTime,orderDate, orderUsername, orderPhone, orderAdress, orderEmail, orderRemark, orderDiscount, create_at) VALUES (${orderId},${member},${gamesid},${cash},${people},'進行中','${time}','${date}','${name}','${tel}','${address}','${email}','${remark}',${discount},now())`
+  sql = `INSERT INTO order_summary(orderSid, memberSid, gameSid, checkPrice, checkQuantity, orderState, orderTime,orderDate, orderUsername, orderPhone, orderAdress, orderEmail, orderRemark, orderDiscount, create_at) VALUES (${orderId},${member},${gamesid},${cash},${people},0,'${time}','${date}','${name}','${tel}','${address}','${email}','${remark}',${discount},now())`
  db.query(sql)
     console.log(linePayRes.data.info.paymentUrl.web)
     console.log('驗證成功')
