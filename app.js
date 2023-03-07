@@ -78,7 +78,7 @@ app.get("/index", async (req, res) => {
 });
 
 app.get("/games", async (req, res) => {
-  // const {litim} =req.query
+console.log(req.query)
   const {
     searchKey = "",
     city = "",
@@ -229,7 +229,7 @@ app.use("/getmap", async (req, res) => {
   gamesql = `SELECT gamesSid,gamesName,gamesImages,gamesPrice,feature01,feature02,storeSid FROM games 
     JOIN gamesfeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid
     JOIN gamesfeature02 on gamesFeature02 = gamesFeature02.gamesFeatureSid
-     WHERE 1`;
+     WHERE gamesColse = 1`;
   const [game] = await db.query(gamesql);
   storesql =
     "SELECT `storeSid`,`storeName`,`storeMobile`,`storeCity`,`storeAddress`,`storelat`,`storelon`,`storeTime`,`storeRest`,`storeLogo` FROM `store` WHERE 1";
@@ -442,6 +442,27 @@ app.put("/gameswitch/:gameSid", async (req, res) => {
   res.json(gameSwitchInfo);
 });
 
+app.get('/storeInfo/:storeSid',async(req,res)=>{
+  console.log(req.params)
+  const {storeSid} = req.params
+  const storeInfoSql = `
+  SELECT * FROM store WHERE storeSid = ${storeSid}
+  `
+  const [storeInfoInfo] = await db.query(storeInfoSql);
+  res.json(storeInfoInfo)
+})
+
+app.post('/editStoreInfo/:storeSid',async(req,res)=>{
+console.log(req.body)
+const {storeSid} = req.params
+const {account,password,leader,mobile,county,address,email,time,website,Logo,remark,}=req.body
+const editStoreSql = `
+UPDATE store SET storeAccount='${account}',storePassword='${password}',storeLeader='${leader}',storeMobile='${mobile}',storeCity='${county}',storeAddress='${address}',storeEmail='${email}',storeTime='${time}',storeWebsite='${website}',storeLogo='${Logo}',storeNews='${remark}',storeEditAt=now() WHERE storeSid = ${storeSid}
+`
+const [editStoreInfo] = await db.query(editStoreSql);
+res.json(editStoreInfo)
+})
+
 app.post("/login/store", upload.none(), async (req, res) => {
   const output = {
     success: false,
@@ -516,6 +537,71 @@ app.post("/login/store", upload.none(), async (req, res) => {
   // res.json(output);
   res.json(output);
 });
+
+app.get('/getMemberOrderData/:memberSid',async(req,res)=>{
+  console.log(req.params)
+  const {memberSid} =req.params
+  const memberOredrDataSql = `
+  SELECT * FROM order_summary 
+  JOIN games ON gameSid = games.gamesSid 
+  JOIN discount_detail ON orderDiscount = discount_detail.discountID
+  WHERE memberSid = ${memberSid}
+  `;
+  const [memberOredrDataInfo] = await db.query(memberOredrDataSql);
+  res.json(memberOredrDataInfo)
+})
+
+app.post('/setMemberOrderData/:orderSid',async(req,res)=>{
+  const {orderSid} =req.params
+  const {rate,comment}=req.body
+const setMemberOrderDataSql = `
+INSERT INTO comment( ordersid, rate, content, date) VALUES (${orderSid},${rate},'${comment}',now())
+`
+const [setMemberOrderDataInfo] = await db.query(setMemberOrderDataSql);
+  res.json(setMemberOrderDataInfo)
+})
+
+app.get('/editMemberData/:orderSid',async(req,res)=>{
+  const {orderSid} =req.params
+ const editMemberDataSql = `
+ SELECT * FROM comment WHERE ordersid = ${orderSid}
+ `
+ const [editMemberDataInfo] = await db.query(editMemberDataSql);
+  res.json(editMemberDataInfo)
+})
+
+app.put('/editMember/:orderSid',async(req,res)=>{
+  const {orderSid} =req.params
+  const {rate,comment}=req.body
+  const editMemberSql = `
+  UPDATE comment SET rate=${rate},content='${comment}',date=now() WHERE ordersid = ${orderSid}
+  `
+  const [editMemberInfo] = await db.query(editMemberSql);
+  res.json(editMemberInfo)
+})
+
+app.get('/memberInfo/:memberSid',async(req,res)=>{
+  console.log(req.params)
+  const {memberSid} = req.params
+  const memberInfoSql = `
+  SELECT * FROM member WHERE membersid  = ${memberSid}
+  `
+  const [memberInfoInfo] = await db.query(memberInfoSql);
+  res.json(memberInfoInfo)
+})
+
+app.post('/memberInfo/:memberSid',async(req,res)=>{
+  console.log(req.body,5555)
+  const {memberSid} = req.params
+  const {nick,password,user,gender,birther,email,phone,identity,Logo,remark,}=req.body
+  const editMemberSql = `
+  UPDATE member SET memNickName='${nick}',memHeadshot='${Logo}',memPassword='${password}',memName='${user}',memGender='${gender}',memBirth='${birther}',memEmail='${email}',memMobile='${phone}',memIdentity='${identity}',memEditAt=now() WHERE membersid  = ${memberSid}
+  `
+  const [editMemberInfo] = await db.query(editMemberSql);
+  res.json(editMemberInfo)
+  })
+  
+
 app.post("/login/member", upload.none(), async (req, res) => {
   const output = {
     success: false,
