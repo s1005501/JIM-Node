@@ -52,30 +52,31 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-app.get("/index", async (req, res) => {
-  const { litim } = req.query;
+app.use('/index',require('./modules/index'))
 
-  gamesql = `SELECT * FROM games 
-  JOIN gamesFeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid 
-  JOIN gamesFeature02 on  gamesFeature02 = gamesFeature02.gamesFeatureSid 
-  JOIN gamestime on gamesTime = gamestime.gamesTimeSid
-  JOIN store on games.storeSid= store.storeSid
-  WHERE gamesColse = 1
-  ORDER BY gamesSid ASC
-  limit ${litim}`;
-  const [game] = await db.query(gamesql);
-  const games = game.map((v, i) => {
-    if (v.gamesImages.length > 20) {
-      local_img = `./public/uploads/${v.gamesImages}`;
-      let bitmap = fs.readFileSync(local_img);
-      let base64str = Buffer.from(bitmap, "kai").toString("base64");
-      return { ...v, gamesImages: `data:image/png;base64,${base64str}` };
-    } else {
-      return { ...v };
-    }
-  });
-  res.json(games);
-});
+// app.get("/index", async (req, res) => {
+//   const { litim } = req.query;
+//   gamesql = `SELECT * FROM games 
+//   JOIN gamesFeature01 on gamesFeature01 = gamesFeature01.gamesFeatureSid 
+//   JOIN gamesFeature02 on  gamesFeature02 = gamesFeature02.gamesFeatureSid 
+//   JOIN gamestime on gamesTime = gamestime.gamesTimeSid
+//   JOIN store on games.storeSid= store.storeSid
+//   WHERE gamesColse = 1
+//   ORDER BY gamesSid ASC
+//   limit ${litim}`;
+//   const [game] = await db.query(gamesql);
+//   const games = game.map((v, i) => {
+//     if (v.gamesImages.length > 20) {
+//       local_img = `./public/uploads/${v.gamesImages}`;
+//       let bitmap = fs.readFileSync(local_img);
+//       let base64str = Buffer.from(bitmap, "kai").toString("base64");
+//       return { ...v, gamesImages: `data:image/png;base64,${base64str}` };
+//     } else {
+//       return { ...v };
+//     }
+//   });
+//   res.json(games);
+// });
 
 app.get("/games", async (req, res) => {
 console.log(req.query)
@@ -144,6 +145,22 @@ app.get("/gameSingle", async (req, res) => {
   });
   res.json(gamesSingle);
 });
+
+app.get('/getGameComment/:sid',async(req,res)=>{
+console.log(req.params)
+const{sid}=req.params
+const getGameCommentSql = `
+SELECT * FROM games
+JOIN order_summary ON gamesSid  = order_summary.gameSid
+JOIN member ON order_summary.memberSid = member.membersid
+JOIN comment ON order_summary.orderSid = comment.ordersid
+WHERE  gamesSid = ${sid}
+ORDER BY order_summary.create_at DESC
+`
+const [getGameCommentInfo] = await db.query(getGameCommentSql);
+console.log(getGameCommentInfo)
+  res.json(getGameCommentInfo)
+})
 
 app.get("/filterDate", async (req, res) => {
   const { sid, date } = req.query;
