@@ -274,6 +274,7 @@ app.use("/getmap", async (req, res) => {
 });
 
 app.post("/post", upload.array("photos", 12), (req, res) => {
+  console.log(1545)
   res.json(req.files);
 });
 
