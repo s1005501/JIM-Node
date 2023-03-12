@@ -63,6 +63,7 @@ app.use('/map',require('./modules/map'))
 
 app.use("/linepay", require("./modules/line"));
 app.post("/post", upload.array("photos", 12), (req, res) => {
+  console.log(1545)
   res.json(req.files);
 });
 
