@@ -17,7 +17,7 @@ var app = express();
 const db = require("./modules/db_connect");
 const cors = require("cors");
 const corsOption = {
-  credential: true,
+  credentials: true,
   origin: (origin, cb) => {
     cb(null, true);
   },
@@ -52,14 +52,14 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-app.use('/index',require('./modules/index'))
-app.use('/games',require('./modules/games'))
-app.use('/orders',require('./modules/orders'))
+// app.use('/index',require('./modules/index'))
+// app.use('/games',require('./modules/games'))
+// app.use('/orders',require('./modules/orders'))
+app.use('/member',require('./routes/member'))
+
 app.use('/signin',require('./modules/signin'))
-app.use('/member',require('./modules/member'))
 app.use('/store',require('./modules/store'))
 app.use('/map',require('./modules/map'))
-
 
 app.use("/linepay", require("./modules/line"));
 app.post("/post", upload.array("photos", 12), (req, res) => {
