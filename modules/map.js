@@ -15,7 +15,10 @@ router.use("/", async (req, res) => {
     "SELECT `storeSid`,`storeName`,`storeMobile`,`storeCity`,`storeAddress`,`storelat`,`storelon`,`storeTime`,`storeRest`,`storeLogo` FROM `store` WHERE 1";
   const [store] = await db.query(storesql);
 const commentSql = `
-SELECT order_summary.gameSid , AVG(rate) As commentAvg,COUNT(rate) AS commentSum FROM comment_ordered JOIN order_summary ON order_summary.orderSid = comment_ordered.order_id GROUP BY order_summary.gameSid;
+SELECT order_summary.gameSid , AVG(rate) As commentAvg,COUNT(rate) AS commentSum 
+FROM comment_ordered 
+JOIN order_summary ON order_summary.orderSid = comment_ordered.order_id 
+GROUP BY order_summary.gameSid;
 `
 const [comment]=await db.query(commentSql)
 
@@ -35,7 +38,9 @@ const [comment]=await db.query(commentSql)
         return {...e};
       }
     });
-    return { ...v, commentAvg: filters[0]?.commentAvg,commentSum:filters[0]?.commentSum };
+    return { ...v, 
+      commentAvg: filters[0]?.commentAvg,
+      commentSum:filters[0]?.commentSum };
   });
 
   const merge = imgdeal.map((v, i) => {
