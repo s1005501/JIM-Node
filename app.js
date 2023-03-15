@@ -52,9 +52,37 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
+// app.get('/a',async(req,res)=>{
+//   const totalSql = `
+//   SELECT * , SUM(liked) AS likedtotal, SUM(unliked) AS unlikedtotal 
+//   FROM comment 
+//   JOIN comment_liked ON comment_liked.comment_id = comment.commentuser_id 
+//   WHERE games_id = 1 
+//   GROUP BY commentuser_id 
+//   ORDER BY comment.create_at ASC
+//   `
+//   const [total]= await db.query(totalSql)
+//   const memberSql = `
+//   SELECT * FROM comment_liked 
+//   JOIN comment ON comment.commentuser_id = comment_liked.comment_id 
+//   WHERE user_id = 2 
+//   GROUP BY comment_id
+//   `
+//   const [member] = await db.query(memberSql)
+//   const merge = total.map((v,i)=>{
+//     const filter = member.filter((k,j)=>{
+//       if (k.comment_id  === v.comment_id) {
+//         return { ...k };
+//       }
+//     })
+//     return { ...v, filter: filter };
+//   })
+//   console.log(total)
+//   res.json(merge)
+// })
 // app.use('/index',require('./modules/index'))
 // app.use('/games',require('./modules/games'))
-// app.use('/orders',require('./modules/orders'))
+app.use('/order',require('./routes/order'))
 app.use('/member',require('./routes/member'))
 
 app.use('/signin',require('./modules/signin'))

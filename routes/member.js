@@ -3,6 +3,7 @@ const days = require("dayjs");
 const db = require("../modules/db_connect");
 const jwt = require("jsonwebtoken");
 const upload = require("./../modules/upload");
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
@@ -13,9 +14,12 @@ router.put("/register", async (req, res) => {
         error: "會員填寫註冊資料有誤",
         code: 0,
         postData: req.body,
+        row: [],
     };
-    const sql =
-        "INSERT INTO `member`( `memNickName`, `memHeadshot`, `memAccount`, `memPassword`, `memName`, `memGender`, `memBirth`, `memEmail`, `memMobile`, `memIdentity`, `memLevel`, `memCreatAt`, `memEditAt`) VALUES (?,?,?,?,?,?,?,?,?,?,1,NOW(),null)";
+    // const sql =
+    //     "INSERT INTO `member`( `memNickName`, `memHeadshot`, `memAccount`, `memPassword`, `memName`, `memGender`, `memBirth`, `memEmail`, `memMobile`, `memIdentity`, `memLevel`, `memCreatAt`, `memEditAt`) VALUES (?,?,?,?,?,?,?,?,?,?,1,NOW(),null)";
+        const sql =
+        "INSERT INTO `member`( `memNickName`, `memHeadshot`, `memAccount`, `memPassword`, `memName`, `memGender`, `memBirth`, `memEmail`, `memMobile`, `memIdentity`, `memLevel`, `memCreatAt`) VALUES (?,?,?,?,?,?,?,?,?,?,1,NOW())";
     let memHeadshot = "";
     if (req.body.mGender === "男") {
         memHeadshot = "male.jpg";
@@ -42,13 +46,13 @@ router.put("/register", async (req, res) => {
     output.success = true;
     output.code = 200;
     output.error = "";
-    console.log(output);
+    output.row = result;
+	// console.log(output);
     res.json(output);
 });
 
-// 會員登入
+// 會員一般登入
 router.post("/login", async (req, res) => {
-    console.log(55555)
     const output = {
         success: false,
         error: "帳號或密碼錯誤",
@@ -87,7 +91,43 @@ router.post("/login", async (req, res) => {
     console.log(output);
     res.json(output);
 });
+// 會員google登入
+router.post("/googlelogin", async (req, res) => {
+	const output = {
+		success: false,
+		error: "帳號或密碼錯誤",
+		code: 0,
+		postData: req.body,
+		token: "",
+	};
 
+	console.log(req.body.googleEmail);
+	const sql = "SELECT * FROM member WHERE memEmail=?";
+	const [result] = await db.query(sql, [req.body.googleEmail]);
+	console.log(result);
+	// 信箱沒比對到
+	if (!result.length) {
+		output.code = 401;
+		output.error = "查無此帳號";
+		return res.json(output);
+	} else {
+		// 有比對到
+		output.success = true;
+		output.code = 200;
+		output.error = "";
+		output.memberToken = jwt.sign(
+			{
+				membersid: result[0].membersid,
+				memAccount: result[0].memAccount,
+			},
+			process.env.JWT_SECRET
+		);
+		output.membersid = result[0].membersid;
+		output.memAccount = result[0].memAccount;
+	}
+
+	res.json(output);
+});
 // 會員profile資料讀取
 router.get("/profile/:sid", async (req, res) => {
     const output = {
@@ -210,6 +250,7 @@ router.get("/level/:sid", async (req, res) => {
 
     const cardLevelName = ["銅卡會員", "銀卡會員", "金卡會員"];
     const upgradePrice = ["500", "3000"];
+    try{
 
     if (result) {
         if (headshotResult.length) {
@@ -259,6 +300,7 @@ router.get("/level/:sid", async (req, res) => {
         output.code = 401;
         output.error = "此會員等級有誤";
     }
+}catch(ex){}
 
     console.log(output.row);
     res.json(output);
@@ -416,12 +458,12 @@ router.post("/update/nickname/:sid", async (req, res) => {
 
 
 // 會員刪除收藏
-router.delete("/like/delete/:sid",async (req,res)=>{
+router.delete("/like/delete/:sid", async (req, res) => {
     const output = {
         success: false,
         error: "",
     };
-    console.log(res.locals.bearer)
+    console.log(res.locals.bearer);
     if (res.locals.bearer.membersid && res.locals.bearer.memAccount) {
         const sql = "DELETE FROM `collect` WHERE collectSid=?";
         const [result] = await db.query(sql, [req.params.sid]);
@@ -433,5 +475,5 @@ router.delete("/like/delete/:sid",async (req,res)=>{
     }
 
     res.json(output);
-})
+});
 module.exports = router;
