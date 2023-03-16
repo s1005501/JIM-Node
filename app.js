@@ -139,6 +139,22 @@ app.get('/tryc',(req,res)=>{
   
   res.json(123)
 })
+const comment = async (usersid, gamesid) => {
+  const sql = `SELECT comment.*,comment_liked.*,member.memHeadshot,member.memNickName FROM comment JOIN comment_liked ON comment_liked.comment_id=comment.sid JOIN member ON comment.commentuser_id=member.membersid WHERE games_id=${gamesid} GROUP BY comment_liked.comment_id ORDER BY comment.create_at DESC`;
+  const [gamedata] = await db.query(sql);
+  const sql2 = `SELECT * FROM comment JOIN comment_liked ON comment_liked.comment_id=comment.sid WHERE user_id=${usersid}`;
+  const [userdata] = await db.query(sql2);
+  const gamebelowcomment = gamedata.map((v, i) => {
+    const filter = userdata.filter((k, j) => {
+      if (k.comment_id === v.comment_id) {
+        return { ...k };
+      }
+    });
+    console.log(filter);
+    return { ...v, filter: filter };
+  });
+  return gamebelowcomment;
+};
 
 // const getData = async () => {
 //   const sql = `SELECT member.memNickName,games.gamesName,games.gamesLogo,gamestime.Time,games.gamesPeopleMin,games.gamesPeopleMax,games.gamesContent,store.storeAddress,comment.sid,comment.rate,comment.comment,comment.pics,comment.create_at FROM comment
@@ -183,9 +199,10 @@ const getreplyData = async()=>{
 
 const getrandomgames=async()=>{
 const randomnumber = Math.floor(Math.random()*10)
-const sql=`SELECT games.* FROM games WHERE gamesSId IN (${randomnumber},${randomnumber}+10,${randomnumber}+60)`
+const sql=`SELECT games.* FROM games WHERE gamesSId IN (${randomnumber},${randomnumber}+10,${randomnumber}+60,${randomnumber}+20,${randomnumber}+30)`
 
 const [replydata]=await db.query(sql)
+console.log(replydata)
 return replydata;
 }
 
@@ -206,7 +223,18 @@ await db.query(sql)
 
 }
 
+const insertreplycomment = async (submitdata) => {
+  const sql = `INSERT INTO comment_replied(replyuser_id, comment_id, replied_comment, replied_pics,create_at) VALUES (${submitdata.usersid},${submitdata.commentsid},'${submitdata.repliedcomment}','${submitdata.repliedpics}',NOW())`;
 
+  await db.query(sql);
+};
+
+const getliked = async (usersid, mygamesName) => {
+  const sql = `SELECT comment.games_id ,comment_liked.* FROM comment JOIN comment_liked ON comment.sid=comment_liked.comment_id WHERE user_id=${usersid} AND games_id=${mygamesName}`;
+
+  const [replydata] = await db.query(sql);
+  return replydata;
+};
 // app.get("/api", async (req, res) => {
 //   res.json(await getData());
 // });
@@ -225,58 +253,65 @@ await db.query(sql)
 //   res.json(tryData)
 // })
 
-app.get('/try/:search',async(req,res)=>{
-console.log(req.params)
-const {search}=req.params
+app.get("/try/:search", async (req, res) => {
+  console.log(req.params);
+  const { search } = req.params;
 
-res.json(await getsearchkey(search))
-})
+  res.json(await getsearchkey(search));
+});
 
-app.get('/api_comment/:mygamesName',async(req,res)=>{
-const{mygamesName}=req.params
-  res.json(await getcommentData(mygamesName))
-})
+app.get("/api_comment/:mygamesName", async (req, res) => {
+  const { mygamesName } = req.params;
+  res.json(await getcommentData(mygamesName));
+});
 
-app.get('/api_reply',async(req,res)=>{
+app.get("/api_reply", async (req, res) => {
+  res.json(await getreplyData());
+});
 
-  res.json(await getreplyData())
-})
+app.get("/api_random", async (req, res) => {
+  res.json(await getrandomgames());
+});
 
+app.get("/api_displaygames", async (req, res) => {
+  res.json(await getdispalygames());
+});
+app.get("/api_news", async (req, res) => {
+  res.json(await getnews());
+});
 
-app.get('/api_random',async(req,res)=>{
+app.get("/api_liked/:usersid/:mygamesName", async (req, res) => {
+  console.log(req.params);
+  const { usersid, mygamesName } = req.params;
+  res.json(await getliked(usersid, mygamesName));
+});
+app.get("/api_gamesdetail/:mygamesName", async (req, res) => {
+  console.log(req.params);
+  const { mygamesName } = req.params;
+  res.json(await getgamedetail(mygamesName));
+});
 
-res.json(await getrandomgames())
-})
+app.get("/api_averagescore/:mygamesName", async (req, res) => {
+  console.log(req.params);
+  const { mygamesName } = req.params;
+  res.json(await averagescore(mygamesName));
+});
+app.get("/api_comment/:usersid/:mygamesName", async (req, res) => {
+  const { usersid, mygamesName } = req.params;
+  res.json(await comment(usersid, mygamesName));
+});
 
-app.get('/api_displaygames',async(req,res)=>{
-  res.json(await getdispalygames())
-})
-app.get('/api_news',async(req,res)=>{
-  res.json(await getnews())
-})
+app.post("/insertcomment", async (req, res) => {
+  const data = req.body;
+  console.log(data);
+  res.json(await insertcomment(data));
+});
 
-app.get('/api_liked',async(req,res)=>{
-res.json(await gettotalliked())
-})
-app.get('/api_gamesdetail/:mygamesName',async(req,res)=>{
-console.log(req.params)
-const{mygamesName}=req.params
-  res.json(await getgamedetail(mygamesName))
-})
-
-app.get('/api_averagescore/:mygamesName',async(req,res)=>{
-console.log(req.params)
-const{mygamesName}=req.params
-  res.json(await averagescore(mygamesName))
-})
-
-app.post('/insertcomment',async(req,res)=>{
-const data = req.body;
-console.log(data);
-res.json(
-  await insertcomment(data)
-);
-})
+app.post("/insertreplycomment", async (req, res) => {
+  const data = req.body;
+  console.log(data);
+  res.json(await insertreplycomment(data));
+});
 
 
 app.get("/logout", (req, res) => {

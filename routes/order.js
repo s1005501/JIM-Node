@@ -103,7 +103,7 @@ router.get("/orderComment/:sid", async (req, res) => {
     row: [],
   };
   const orderCommentsql =
-    "SELECT games.gamesSid ,comment.*, member.memNickName,member.memHeadshot FROM games JOIN comment ON games.gamesSid=comment.games_id JOIN member ON comment.user_id=member.membersid WHERE games.gamesSid=?";
+    "SELECT games.gamesSid ,comment.*, member.memNickName,member.memHeadshot FROM games JOIN comment ON games.gamesSid=comment.games_id JOIN member ON comment.games_id =member.membersid WHERE games.gamesSid=?";
 
   const [result] = await db.query(orderCommentsql, [req.params.sid]);
 
@@ -156,7 +156,7 @@ router.get("/order/:sid", async (req, res) => {
     row: [],
   };
   const ordersql =
-    "SELECT order_summary.*,gamestime.*,games.gamesName,games.gamesLogo,games.gamesTime,store.storeName,store.storeAddress,member.memAccount,member.memLevel FROM order_summary JOIN games ON games.gamesSid=order_summary.gameSid JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid JOIN store ON games.storeSid=store.storeSid JOIN member ON order_summary.memberSid=member.membersid WHERE order_summary.orderSid=?";
+    "SELECT order_summary.*,gamestime.*,games.gamesName,games.gamesImages,games.gamesTime,store.storeName,store.storeAddress,member.memAccount,member.memLevel FROM order_summary JOIN games ON games.gamesSid=order_summary.gameSid JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid JOIN store ON games.storeSid=store.storeSid JOIN member ON order_summary.memberSid=member.membersid WHERE order_summary.orderSid=?";
 
   const [result] = await db.query(ordersql, [req.params.sid]);
 
