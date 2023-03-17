@@ -1,8 +1,8 @@
 const express = require("express");
-// const days = require("dayjs");
+const days = require("dayjs");
 const db = require("../modules/db_connect");
 const jwt = require("jsonwebtoken");
-const upload = require("./../modules/upload");
+const upload = require("./../modules/upload-imgs");
 const nodemailer = require("nodemailer");
 const svgCaptcha = require("svg-captcha");
 
@@ -158,7 +158,7 @@ router.get("/profile/:sid", async (req, res) => {
 	const [result] = await db.query(sql, [req.params.sid]);
 	if (result) {
 		// 轉換時間
-		// result[0].memBirth = res.locals.dayFormat(result[0].memBirth);
+		result[0].memBirth = res.locals.dayFormat(result[0].memBirth);
 		output.row = result[0];
 		output.success = true;
 		output.code = 200;
@@ -179,9 +179,9 @@ router.get("/order/:sid", async (req, res) => {
 	const [result] = await db.query(sql, [req.params.sid]);
 	if (result) {
 		// 轉換時間
-		// result.create_at = result.map((v, i) => {
-		// 	return (v.create_at = res.locals.dayFormat(v.create_at));
-		// });
+		result.create_at = result.map((v, i) => {
+			return (v.create_at = res.locals.dayFormat(v.create_at));
+		});
 
 		output.success = true;
 		output.code = 200;
@@ -234,9 +234,9 @@ router.get("/comment/:sid", async (req, res) => {
 	const [result] = await db.query(sql, [req.params.sid]);
 	// 轉換時間
 	if (result) {
-		// result.create_at = result.map((v, i) => {
-		// 	return (v.create_at = res.locals.dayFormat(v.create_at));
-		// });
+		result.create_at = result.map((v, i) => {
+			return (v.create_at = res.locals.dayFormat(v.create_at));
+		});
 		output.success = true;
 		output.code = 200;
 		output.error = "";
@@ -495,7 +495,7 @@ router.delete("/like/delete/:sid", async (req, res) => {
 // 會員驗證寫入資料庫
 router.get("/verified/:memAccount", async (req, res) => {
 	const { memAccount } = req.params;
-console.log(9999999999)
+
 	const output = {
 		success: false,
 		error: "",

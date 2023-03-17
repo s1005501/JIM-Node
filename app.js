@@ -41,8 +41,23 @@ app.use(
     cookie: {
       maxAge: 1200000,
     },
+    
   })
+  
 );
+app.use((req,res,next)=>{
+  res.locals.bearer = {}; // 預設值
+  let auth=req.get("Authorization")
+  if(auth && auth.indexOf("Bearer ")===0){
+      
+      auth=auth.slice(7)
+        try{
+      res.locals.bearer=jwt.verify(auth,process.env.JWT_SECRET)
+      }catch(ex){}
+  }
+     console.log("res.locals.bearer:", res.locals.bearer);
+  next()
+})
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
