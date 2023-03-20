@@ -103,6 +103,7 @@ router.post("/login", async (req, res) => {
     );
     output.membersid = result[0].membersid;
     output.memAccount = result[0].memAccount;
+    output.memHeadshot=result[0].memHeadshot
     output.memVerified = result[0].memVerified;
   }
   // console.log(output);
@@ -349,6 +350,7 @@ router.post(
       output.success = true;
       output.error = "";
       output.row = result;
+      output.filename = req.file.filename
     }
     // console.log(req.file);
 
