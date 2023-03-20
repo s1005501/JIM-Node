@@ -1,118 +1,19 @@
-require("dotenv").config({
-  path: "./dev.env",
-});
-const jwt = require("jsonwebtoken");
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-const fs = require("fs");
-
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
-
-var app = express();
-
-const db = require("./modules/db_connect");
+"use strict";
+const express = require("express");
+const app = express();
 const cors = require("cors");
+const db = require("./modules/db_connection");
 const bodyParser = require("body-parser");
-const corsOption = {
+
+const corsOptions = {
   credentials: true,
-  origin: (origin, cb) => {
+  origin: function (origin, cb) {
+    console.log({ origin });
     cb(null, true);
   },
 };
-app.use(cors(corsOption));
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
-const upload = require("./modules/upload");
-const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session);
-const sessionStore = new MySQLStore({}, db);
-const bcrypt = require("bcrypt");
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
-
-app.use(
-  session({
-    secret: "狡兔三窟",
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore,
-    cookie: {
-      maxAge: 1200000,
-    },
-    
-  })
-  
-);
-app.use((req,res,next)=>{
-  res.locals.bearer = {}; // 預設值
-  let auth=req.get("Authorization")
-  if(auth && auth.indexOf("Bearer ")===0){
-      
-      auth=auth.slice(7)
-        try{
-      res.locals.bearer=jwt.verify(auth,process.env.JWT_SECRET)
-      }catch(ex){}
-  }
-     console.log("res.locals.bearer:", res.locals.bearer);
-  next()
-})
-app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
-
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
-
-// app.get('/a',async(req,res)=>{
-//   const totalSql = `
-//   SELECT * , SUM(liked) AS likedtotal, SUM(unliked) AS unlikedtotal 
-//   FROM comment 
-//   JOIN comment_liked ON comment_liked.comment_id = comment.commentuser_id 
-//   WHERE games_id = 1 
-//   GROUP BY commentuser_id 
-//   ORDER BY comment.create_at ASC
-//   `
-//   const [total]= await db.query(totalSql)
-//   const memberSql = `
-//   SELECT * FROM comment_liked 
-//   JOIN comment ON comment.commentuser_id = comment_liked.comment_id 
-//   WHERE user_id = 2 
-//   GROUP BY comment_id
-//   `
-//   const [member] = await db.query(memberSql)
-//   const merge = total.map((v,i)=>{
-//     const filter = member.filter((k,j)=>{
-//       if (k.comment_id  === v.comment_id) {
-//         return { ...k };
-//       }
-//     })
-//     return { ...v, filter: filter };
-//   })
-//   console.log(total)
-//   res.json(merge)
-// })
-// app.use('/index',require('./modules/index'))
-// app.use('/games',require('./modules/games'))
-app.use('/order',require('./routes/order'))
-app.use('/member',require('./routes/member'))
-
-app.use('/signin',require('./modules/signin'))
-app.use('/store',require('./modules/store'))
-app.use('/map',require('./modules/map'))
-
-app.use("/linepay", require("./modules/line"));
-app.post("/post", upload.array("photos", 12), (req, res) => {
-  console.log(1545)
-  res.json(req.files);
-});
-
-
 
 const getdispalygames = async () => {
   const sql = `SELECT * FROM games WHERE gamesSid`;
@@ -238,7 +139,7 @@ const getcommentData = async (queryname) => {
 const getreplyData = async () => {
   const sql = `SELECT member.memNickName,comment_replied.*,comment.*  FROM comment_replied
     JOIN member ON member.membersid=comment_replied.replyuser_id
-    JOIN comment ON comment_replied.comment_id=comment.sid ORDER BY comment_replied.sid DESC`;
+    JOIN comment ON comment_replied.comment_id=comment.sid`;
 
   const [replydata] = await db.query(sql);
   return replydata;
@@ -405,25 +306,15 @@ app.delete("/insertdelete/:sid/:user", async (req, res) => {
       console.log(sid)
        res.json(await update2(sid,user));})
 
-
-app.get("/logout", (req, res) => {
-  delete req.session.admin;
-  res.json(req.session);
-});
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
+app.get("/adult", (req, res) => {
+  res.status(404).end();
 });
 
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render("error");
+const PORT = process.env.PORT || 3005;
+app.listen(PORT, (error) => {
+  if (error) {
+    console.log("哇喔，錯了");
+  } else {
+    console.log("服務器啟動：http://localhost:" + PORT);
+  }
 });
-
-module.exports = app;
