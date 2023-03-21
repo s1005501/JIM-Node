@@ -15,7 +15,6 @@ const {
   LINEPAY_RETURN_CONFIRM_URL,
   LINEPAY_RETURN_CANCEL_URL,
 } = process.env;
-const orders = require("./../data/sampleData");
 const { default: axios } = require("axios");
 
 router
@@ -33,8 +32,14 @@ router
   .post("/createOrder/:orderId", async (req, res) => {
     const { orderId } = req.params;
     const { sid, member, gamesid, people, cash, prod, time, date } = req.query;
-    const { data } = req.body;
-    const { remark, name, tel, address, email, discount } = data;
+    // const { data } = req.body;
+    // const { remark, name, tel, address, email, discount } = data;
+    const remark = ''
+    const name = '玩家'
+    const tel ='0912345678'
+    const address = '地址'
+    const email = 'email'
+    const discount = '1'
     const order = {
       amount: cash,
       currency: "TWD",

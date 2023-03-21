@@ -10,7 +10,7 @@ router.get("/getStoreOrderData/:sid", async (req, res) => {
   const getStoreOrderDataSql = `
     SELECT * FROM order_summary 
   JOIN games ON gameSid = games.gamesSid
-  WHERE games.storeSid = ${sid}
+  WHERE games.storeSid = ${sid} ORDER BY order_summary.create_at ASC 
   `;
   const [getStoreOrderDataInfo] = await db.query(getStoreOrderDataSql);
   res.json(getStoreOrderDataInfo);
