@@ -88,7 +88,7 @@ router.post("/login", async (req, res) => {
     !(req.body.memCaptcha === captchaResult[0].memCaptchaText)
   ) {
     output.code = 403;
-    output.error = "驗證碼錯誤";
+    output.error = "未輸入驗證碼或驗證碼錯誤";
     return res.json(output);
   } else {
     output.success = true;
@@ -103,6 +103,7 @@ router.post("/login", async (req, res) => {
     );
     output.membersid = result[0].membersid;
     output.memAccount = result[0].memAccount;
+    output.memHeadshot=result[0].memHeadshot
     output.memVerified = result[0].memVerified;
   }
   // console.log(output);
@@ -234,7 +235,7 @@ router.get("/comment/:sid", async (req, res) => {
     row: [],
   };
   const sql =
-    "SELECT comment_ordered.create_at,games.gamesName,comment_ordered.comment,comment_ordered.sid FROM `comment_ordered` JOIN games ON games.gamesSid=comment_ordered.game_id WHERE user_id=?";
+    "SELECT comment_ordered.create_at,games.gamesName,comment_ordered.comment,comment_ordered.sid,comment_ordered.game_id FROM `comment_ordered` JOIN games ON games.gamesSid=comment_ordered.game_id WHERE user_id=?";
   const [result] = await db.query(sql, [req.params.sid]);
   // 轉換時間
   if (result) {
@@ -349,6 +350,7 @@ router.post(
       output.success = true;
       output.error = "";
       output.row = result;
+      output.filename = req.file.filename
     }
     // console.log(req.file);
 

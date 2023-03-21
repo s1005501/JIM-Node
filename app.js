@@ -101,6 +101,7 @@ app.use("/users", usersRouter);
 // app.use('/games',require('./modules/games'))
 app.use('/order',require('./routes/order'))
 app.use('/member',require('./routes/member'))
+app.use('/games',require('./routes/games'))
 
 app.use('/signin',require('./modules/signin'))
 app.use('/store',require('./modules/store'))
@@ -108,7 +109,7 @@ app.use('/map',require('./modules/map'))
 
 app.use("/linepay", require("./modules/line"));
 app.post("/post", upload.array("photos", 12), (req, res) => {
-  console.log(1545)
+  console.log(req.files)
   res.json(req.files);
 });
 

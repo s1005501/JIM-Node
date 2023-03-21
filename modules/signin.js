@@ -42,41 +42,15 @@ router.post("/store", upload.none(), async (req, res) => {
     (output.account = rows[0].storeAccount),
     (output.store = rows[0].storeName),
     (output.target = "store");
-  if (rows[0].storeLogo.length > 20) {
-    local_img = `./public/uploads/${rows[0].storeLogo}`;
-    let bitmap = fs.readFileSync(local_img);
-    let base64str = Buffer.from(bitmap, "kai").toString("base64");
-    output.logo = `data:image/png;base64,${base64str}`;
-  } else {
-    output.logo = rows[0].storeLogo;
-  }
-  // const sql = "SELECT * FROM admins WHERE account=?";
-  // const [rows] = await db.query(sql, [req.body.account]);
-  // if (!rows.length) {
-  //   output.code = 401;
-  //   return res.json(output);
-  // }
-  // if (!(await bcrypt.compare(req.body.password, rows[0].password_hash))) {
-  //   output.code = 402;
+  // if (rows[0].storeLogo.length > 20) {
+  //   local_img = `./public/uploads/${rows[0].storeLogo}`;
+  //   let bitmap = fs.readFileSync(local_img);
+  //   let base64str = Buffer.from(bitmap, "kai").toString("base64");
+  //   output.logo = `data:image/png;base64,${base64str}`;
   // } else {
-  //   output.token = jwt.sign(
-  //     {
-  //       sid: rows[0].sid,
-  //       account: rows[0].account,
-  //     },
-  //     process.env.JWT_SECRET_KEY
-  //   );
-  //   output.success = true;
-  //   output.code = 200;
-  //   output.error = "";
-  //   output.accountId = rows[0].sid;
-  //   (output.account = rows[0].account),
-  //     (req.session.admin = {
-  //       sid: rows[0].sid,
-  //       account: rows[0].account,
-  //     });
+  //   output.logo = rows[0].storeLogo;
   // }
-  // res.json(output);
+
   res.json(output);
 });
 
@@ -116,14 +90,14 @@ router.post("/member", upload.none(), async (req, res) => {
     (output.account = rows[0].memAccount),
     (output.store = rows[0].memName),
     (output.target = "member");
-  if (rows[0].memHeadshot.length > 20) {
-    local_img = `./public/uploads/${rows[0].memHeadshot}`;
-    let bitmap = fs.readFileSync(local_img);
-    let base64str = Buffer.from(bitmap, "kai").toString("base64");
-    output.logo = `data:image/png;base64,${base64str}`;
-  } else {
-    output.logo = rows[0].memHeadshot;
-  }
+  // if (rows[0].memHeadshot.length > 20) {
+  //   local_img = `./public/uploads/${rows[0].memHeadshot}`;
+  //   let bitmap = fs.readFileSync(local_img);
+  //   let base64str = Buffer.from(bitmap, "kai").toString("base64");
+  //   output.logo = `data:image/png;base64,${base64str}`;
+  // } else {
+  //   output.logo = rows[0].memHeadshot;
+  // }
   res.json(output);
 });
 
@@ -201,5 +175,18 @@ router.get("/memberformcheck/:query", async (req, res) => {
   const [formCheck] = await db.query(formCheckSql);
   res.json(formCheck);
 });
+
+router.get('/signinData/:target',async(req,res)=>{
+  console.log(req.query)
+  const{target}=req.params
+  let name = target === 'store' ? 'storeSid ':'membersid '
+  const{sid}=req.query
+  console.log(target,sid,name)
+  const signinDataSql = `
+  SELECT * FROM ${target} WHERE ${name}=${sid}
+  `
+  const [signinDataData]=await db.query(signinDataSql)
+  res.json(signinDataData)
+})
 
 module.exports = router;

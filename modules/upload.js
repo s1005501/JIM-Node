@@ -13,7 +13,7 @@ const fileFilter = (req, file, cb) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, __dirname + "./../../JIM_TEAM/public/Images/uploads");
+    cb(null, __dirname + "./../../JIM_TEAM_React/public/Images/uploads");
   },
   filename: (req, file, cb) => {
     cb(null, v4() + extMap[file.mimetype]);

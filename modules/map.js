@@ -22,15 +22,18 @@ GROUP BY order_summary.gameSid;
 `
 const [comment]=await db.query(commentSql)
 
+  // const imgdeal = store.map((v, i) => {
+  //   if (v.storeLogo?.length > 20) {
+  //     local_img = `./public/uploads/${v.storeLogo}`;
+  //     let bitmap = fs.readFileSync(local_img);
+  //     let base64str = Buffer.from(bitmap, "kai").toString("base64");
+  //     return { ...v, storeLogo: `data:image/png;base64,${base64str}` };
+  //   } else {
+  //     return { ...v };
+  //   }
+  // });
   const imgdeal = store.map((v, i) => {
-    if (v.storeLogo?.length > 20) {
-      local_img = `./public/uploads/${v.storeLogo}`;
-      let bitmap = fs.readFileSync(local_img);
-      let base64str = Buffer.from(bitmap, "kai").toString("base64");
-      return { ...v, storeLogo: `data:image/png;base64,${base64str}` };
-    } else {
-      return { ...v };
-    }
+return v
   });
   const commentDeal = game.map((v, i) => {
     const filters = comment.filter((e, j) => {
@@ -51,6 +54,7 @@ const [comment]=await db.query(commentSql)
     });
     return { ...v, game: filters };
   });
+  console.log(commentDeal)
   res.json(merge);
 });
 

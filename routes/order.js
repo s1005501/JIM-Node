@@ -26,7 +26,7 @@ router.get("/gamesinfo/:sid", async (req, res) => {
     row: [],
   };
   const gamessql =
-    "SELECT games.*,gamestime.*, store.storeAddress FROM games JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid JOIN store ON games.storeSid=store.storeSid WHERE games.gamesSid=?";
+    "SELECT games.*,gamestime.*, store.storeAddress,store.storeName FROM games JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid JOIN store ON games.storeSid=store.storeSid WHERE games.gamesSid=?";
 
   const [result] = await db.query(gamessql, [req.params.sid]);
 
