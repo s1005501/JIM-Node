@@ -86,6 +86,7 @@ router.get("/storeInfo/:storeSid", async (req, res) => {
             SELECT * FROM store WHERE storeSid = ${storeSid}
             `;
   const [storeInfoInfo] = await db.query(storeInfoSql);
+
   // const storeInfoData = storeInfoInfo.map((v, i) => {
   //   if (v.storeLogo.length > 20) {
   //     local_img = `./public/uploads/${v.storeLogo}`;
@@ -96,6 +97,7 @@ router.get("/storeInfo/:storeSid", async (req, res) => {
   //     return { ...v };
   //   }
   // });
+  
   res.json(storeInfoInfo);
 });
 

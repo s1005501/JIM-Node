@@ -107,6 +107,8 @@ app.use('/signin',require('./modules/signin'))
 app.use('/store',require('./modules/store'))
 app.use('/map',require('./modules/map'))
 
+app.use('/firstpage', require('./routes/firstpage'))
+
 app.use("/linepay", require("./modules/line"));
 app.post("/post", upload.array("photos", 12), (req, res) => {
   console.log(req.files)

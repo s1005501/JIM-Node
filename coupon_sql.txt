@@ -1,0 +1,12 @@
+INSERT INTO `discount`(
+    `discountRand`,
+    `discountID`,
+    `discountState`,
+    `discountRelease`
+)
+VALUES(
+    '1A2S2C',
+    '20',
+    '未使用',
+    now()
+)
