@@ -103,7 +103,7 @@ router.post("/login", async (req, res) => {
     );
     output.membersid = result[0].membersid;
     output.memAccount = result[0].memAccount;
-    output.memHeadshot=result[0].memHeadshot
+    output.memHeadshot=result[0].memHeadshot;
     output.memVerified = result[0].memVerified;
   }
   // console.log(output);
@@ -145,6 +145,7 @@ router.post("/googlelogin", async (req, res) => {
     output.membersid = result[0].membersid;
     output.memAccount = result[0].memAccount;
     output.memVerified = result[0].memVerified;
+    output.	memHeadshot = result[0].memHeadshot
   }
 
   res.json(output);
@@ -210,7 +211,7 @@ router.get("/like/:sid", async (req, res) => {
     row: [],
   };
   const sql =
-    "SELECT gamesName,collectSid ,storeCity , storeName FROM `collect` JOIN `store` ON store.storeSid=collect.storeSid JOIN `games`ON games.gamesSid=collect.collectSid WHERE membersid=?";
+    "SELECT games.gamesName,store.storeName,store.storeCity,collect.* FROM `collect` JOIN games ON collect.gamesSid=games.gamesSid JOIN member ON collect.membersid=member.membersid JOIN store ON collect.storeSid=store.storeSid WHERE member.membersid=?";
   const [result] = await db.query(sql, [req.params.sid]);
   if (result) {
     output.success = true;
@@ -537,6 +538,25 @@ router.get("/captcha", async (req, res) => {
   // console.log(captcha.text);
   // console.log(result);
   res.status(200).send(captcha.data);
+});
+
+// 會員折價券資料讀取
+router.get("/discount/:sid", async (req, res) => {
+  const output = {
+      success: false,
+      error: "",
+      row: [],
+  };
+
+  const sql =
+      "SELECT discount_detail.*,discount.discountState FROM `discount` JOIN member ON discount.membersid=member.membersid JOIN discount_detail ON discount_detail.discountID=discount.discountID WHERE member.membersid=?";
+
+  const [result] = await db.query(sql, [req.params.sid]);
+  if (result.length) {
+      output.success = true;
+      output.row = result;
+      res.json(output);
+  }
 });
 
 module.exports = router;
