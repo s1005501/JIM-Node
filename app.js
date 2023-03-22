@@ -128,7 +128,7 @@ const getsearchkey = async (search) => {
 };
 
 const getnews = async () => {
-  const sql = `SELECT member.memNickName,games.gamesName,games.gamesSid,comment.* FROM comment
+  const sql = `SELECT member.memNickName,member.memHeadshot,games.gamesName,games.gamesSid,comment.* FROM comment
   JOIN member ON member.membersid=comment.commentuser_id
   JOIN games ON games.gamesSid=comment.games_id
  ORDER BY create_at DESC`;
