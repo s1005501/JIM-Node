@@ -17,6 +17,39 @@ router.put("/register", async (req, res) => {
     postData: req.body,
     row: [],
   };
+  console.log(req.body);
+  // ! 檢查帳號、email、身分證字號是否重複
+  const accountCheckSql =
+    "SELECT member.memAccount FROM `member` WHERE member.memAccount=?";
+  const [accountCheckResult] = await db.query(accountCheckSql, [
+    req.body.mAccount,
+  ]);
+
+  if (accountCheckResult.length) {
+    output.error = "會員帳號重複";
+    return res.json(output);
+  }
+
+  const emailCheckSql =
+    "SELECT member.memEmail FROM `member` WHERE member.memEmail=?";
+  const [emailCheckResult] = await db.query(emailCheckSql, [req.body.mEmail]);
+  if (emailCheckResult.length) {
+    output.error = "會員信箱重複";
+    return res.json(output);
+  }
+
+  const identityCheckSql =
+    "SELECT member.memIdentity FROM `member` WHERE member.memIdentity=?";
+  const [identityCheckResult] = await db.query(identityCheckSql, [
+    req.body.mIdentity,
+  ]);
+  console.log(identityCheckResult.length);
+  if (identityCheckResult.length) {
+    output.error = "會員身分證重複";
+    return res.json(output);
+  }
+
+  // 前面都沒重複應該就可以過了
   const sql =
     "INSERT INTO `member`( `memNickName`, `memHeadshot`, `memAccount`, `memPassword`, `memName`, `memGender`, `memBirth`, `memEmail`, `memMobile`, `memIdentity`, `memLevel`, `memCreatAt`, `memEditAt`) VALUES (?,?,?,?,?,?,?,?,?,?,1,NOW(),null)";
   let memHeadshot = "";
@@ -41,12 +74,14 @@ router.put("/register", async (req, res) => {
     output.code = 401;
     output.error = "此帳號已被使用";
     return res.json(output);
+  } else {
+    output.success = true;
+    output.code = 200;
+    output.error = "";
+    output.row = result;
+    // console.log(output);
   }
-  output.success = true;
-  output.code = 200;
-  output.error = "";
-  output.row = result;
-  // console.log(output);
+  console.log(result);
   res.json(output);
 });
 
@@ -103,7 +138,7 @@ router.post("/login", async (req, res) => {
     );
     output.membersid = result[0].membersid;
     output.memAccount = result[0].memAccount;
-    output.memHeadshot=result[0].memHeadshot;
+    output.memHeadshot = result[0].memHeadshot;
     output.memVerified = result[0].memVerified;
   }
   // console.log(output);
@@ -145,7 +180,7 @@ router.post("/googlelogin", async (req, res) => {
     output.membersid = result[0].membersid;
     output.memAccount = result[0].memAccount;
     output.memVerified = result[0].memVerified;
-    output.	memHeadshot = result[0].memHeadshot
+    output.memHeadshot = result[0].memHeadshot;
   }
 
   res.json(output);
@@ -297,24 +332,21 @@ router.get("/level/:sid", async (req, res) => {
       if (output.row.memSumPrice > 3000) {
         output.row.memCardLevel = cardLevelName[2];
         // 差額
-		output.row.difference =
-		upgradePrice[1] - output.row.memSumPrice;
+        output.row.difference = upgradePrice[1] - output.row.memSumPrice;
       }
 
       //  銀卡
       if (3000 > output.row.memSumPrice && output.row.memSumPrice > 500) {
         output.row.memCardLevel = cardLevelName[1];
         // 差額
-		output.row.difference =
-		upgradePrice[1] - output.row.memSumPrice;
+        output.row.difference = upgradePrice[1] - output.row.memSumPrice;
       }
 
       // 銅卡
       if (output.row.memSumPrice < 500) {
         output.row.memCardLevel = cardLevelName[0];
         // 差額
-		output.row.difference =
-		upgradePrice[0] - output.row.memSumPrice;
+        output.row.difference = upgradePrice[0] - output.row.memSumPrice;
       }
 
       output.success = true;
@@ -342,16 +374,13 @@ router.post(
       row: [],
     };
     const sql = "UPDATE `member` SET `memHeadshot`=? WHERE membersid=?";
-	const [result] = await db.query(sql, [
-		req.file.filename,
-		req.params.sid,
-	]);
+    const [result] = await db.query(sql, [req.file.filename, req.params.sid]);
 
     if (result) {
       output.success = true;
       output.error = "";
       output.row = result;
-      output.filename = req.file.filename
+      output.filename = req.file.filename;
     }
     // console.log(req.file);
 
@@ -368,18 +397,35 @@ router.post("/update/password/:sid", async (req, res) => {
     row: [],
   };
   if (res.locals.bearer.membersid && res.locals.bearer.memAccount) {
-    const sql = "UPDATE `member` SET `memPassword`=? WHERE membersid=?";
-    const [result] = await db.query(sql, [
-      req.body.mProfilePassword,
-      req.params.sid,
-    ]);
-    if (result) {
-      output.success = true;
-      output.error = "";
-      output.row = result;
-    }
+    if (req.body.mOldPassword) {
+      const oldPasswordSql =
+        "SELECT `memPassword` FROM `member` WHERE member.membersid=?";
+      const [oldPasswordSResult] = await db.query(oldPasswordSql, [
+        req.params.sid,
+      ]);
+      console.log(oldPasswordSResult[0]);
 
-    res.json(output);
+      if (oldPasswordSResult[0].memPassword !== req.body.mOldPassword) {
+        output.error = "舊密碼輸入錯誤";
+        res.json(output);
+      }
+
+      if (oldPasswordSResult[0].memPassword === req.body.mOldPassword) {
+        const newPasswordSql =
+          "UPDATE `member` SET `memPassword`=? WHERE membersid=?";
+        const [newPasswordSResult] = await db.query(newPasswordSql, [
+          req.body.mProfilePassword,
+          req.params.sid,
+        ]);
+        if (newPasswordSResult) {
+          output.success = true;
+          output.error = "";
+          output.row = newPasswordSResult;
+        }
+
+        res.json(output);
+      }
+    }
   }
 });
 
@@ -502,7 +548,7 @@ router.delete("/like/delete/:sid", async (req, res) => {
 // 會員驗證寫入資料庫
 router.get("/verified/:memAccount", async (req, res) => {
   const { memAccount } = req.params;
-  console.log(9999999999);
+ 
   const output = {
     success: false,
     error: "",
@@ -543,20 +589,31 @@ router.get("/captcha", async (req, res) => {
 // 會員折價券資料讀取
 router.get("/discount/:sid", async (req, res) => {
   const output = {
-      success: false,
-      error: "",
-      row: [],
+    success: false,
+    error: "",
+    row: [],
   };
 
   const sql =
-      "SELECT discount_detail.*,discount.discountState FROM `discount` JOIN member ON discount.membersid=member.membersid JOIN discount_detail ON discount_detail.discountID=discount.discountID WHERE member.membersid=?";
+    "SELECT * FROM discount JOIN discount_detail ON discount.discountID = discount_detail.discountID WHERE discount.membersid =?";
 
   const [result] = await db.query(sql, [req.params.sid]);
   if (result.length) {
-      output.success = true;
-      output.row = result;
-      res.json(output);
+    output.success = true;
+    output.row = result;
+    res.json(output);
   }
+});
+
+router.get("/setdiscount/:sid", async (req, res) => {
+  console.log(req.params, req.query);
+  const { sid } = req.params;
+  const { discount } = req.query;
+  const sql = `
+  UPDATE discount SET membersid=${sid} WHERE discountRand = '${discount}'
+  `;
+  const sqlr = await db.query(sql);
+  res.json(sqlr);
 });
 
 module.exports = router;

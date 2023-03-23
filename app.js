@@ -280,12 +280,43 @@ const insertliked = async (submitdata) => {
 
   await db.query(sql);
 };
+const insertcommentorder = async (submitdata) => {
+  const sql = `INSERT INTO comment_ordered(order_sid, user_id, game_id, rate, comment, create_at) VALUES (${submitdata.order},${submitdata.usersid},${submitdata.ordergameid},${submitdata.rate},'${submitdata.comment}',NOW())`;
+
+  await db.query(sql);
+};
 
 const getliked = async (usersid, mygamesName) => {
   const sql = `SELECT comment.games_id ,comment_liked.* FROM comment JOIN comment_liked ON comment.sid=comment_liked.comment_id WHERE user_id=${usersid} AND games_id=${mygamesName}`;
 
   const [replydata] = await db.query(sql);
   return replydata;
+};
+
+const getorderdetail = async (user) => {
+  const sql = `SELECT order_summary.*,games.gamesName FROM order_summary JOIN games ON order_summary.gameSid=games.gamesSid WHERE memberSid=${user}`;
+
+  const [orderdata] = await db.query(sql);
+  const sql2=`SELECT * FROM comment_ordered WHERE user_id=${user}`
+  const [commentdata] = await db.query(sql2);
+  orderdata.forEach((gd)=>{
+    for(let ud of commentdata){
+      // console.log(+gd.sid, +ud.comment_id, +gd.sid === +ud.comment_id)
+      if(+gd.orderSid === +ud.order_sid){
+        gd.filter = ud
+      }
+    }
+
+  })
+  return orderdata;
+};
+const getordercomment = async (user) => {
+  const sql = `SELECT *,games.gamesName FROM comment_ordered JOIN games ON comment_ordered.game_id=games.gamesSid WHERE user_id=${user}`;
+
+  const [ordercomment] = await db.query(sql);
+
+ 
+  return ordercomment;
 };
 // const totalliked=async (params) => {
 //   const sql = `SELECT comment_liked.*, SUM(liked) AS totallike FROM comment_liked GROUP BY comment_id`;
@@ -375,7 +406,19 @@ app.get("/totalliked",async (req, res) => {
  
   res.json(await totalliked());
 });
+app.get("/api_orderdetail/:user",async (req, res) => {
+  const {user}=req.params
+    
+     
+  res.json(await getorderdetail(user));
+});
 
+app.get("/api_ordercomment/:user",async (req, res) => {
+  const {user}=req.params
+    
+     
+  res.json(await getordercomment(user));
+});
 app.post("/insertcomment", async (req, res) => {
   const data = req.body;
   console.log(data);
@@ -393,6 +436,12 @@ app.post("/insertliked", async (req, res) => {
   console.log(data);
   res.json(await insertliked(data));
 });
+app.post("/insertcommentorder", async (req, res) => {
+  const data = req.body;
+  console.log(data);
+  res.json(await insertcommentorder(data));
+});
+
 app.delete("/insertdelete/:sid/:user", async (req, res) => {
  const {sid,user}=req.params
  console.log(sid)

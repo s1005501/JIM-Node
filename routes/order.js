@@ -35,25 +35,19 @@ router.get("/gamesinfo/:sid", async (req, res) => {
   res.json(result);
 });
 
-// ----------修改中，步行就改回上列--------------**********
-// router.get("/gamesinfoCollect/:sid", async (req, res) => {
-//   const output = {
-//     row: [],
-//     collect:[],
-//   };
-//   const gamessql =
-//     "SELECT games.*,gamestime.*, store.storeAddress FROM games JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid JOIN store ON games.storeSid=store.storeSid WHERE games.gamesSid=?";
+// 會員等級用
+router.get("/ordermemLevel/:sid", async (req, res) => {
+  const output = {
+    row: [],
+  };
+  const gamessql =
+    "SELECT * FROM member WHERE member.membersid=?";
+  const [result] = await db.query(gamessql, [req.params.sid]);
 
-//   const collectsql ="SELECT collectSid, membersid, gamesSid, storeSid, updated_at FROM collect WHERE collectSid=?";
+  // output.row = result[0];
 
-//   const [result1] = await db.query(gamessql, [req.params.sid]);
-//   const [result2] = await db.query(collectsql, [req.params.sid]);
-
-//   output.row = result1;
-//   output.collect = result2;
-
-//   res.json(output);
-// });
+  res.json(result);
+});
 
 
 // 遊戲介紹裡的評論用
@@ -75,7 +69,7 @@ router.get("/orderComment/:sid", async (req, res) => {
   res.json(result);
 });
 
-// -----------遊戲會員書籤加入用-------------還沒用到----------------
+// -----------遊戲會員書籤加入用----------------------------
 router.post("/collectAdd", async (req, res) => {
   const output = {
     success:false,
@@ -119,62 +113,15 @@ router.delete("/collectDelete/:sid?", async (req, res) => {
     res.json(output);
   });
 
-// --測試看看，但沒成功，跟上面同類型的
-// router.post("/collect/:sid", async (req, res) => {
-//   const output = {
-//     success: false,
-//     row: {},
-//   };
-
-//   const sql =
-//     "INSERT INTO `collect`(`membersid`, `gamesSid`, `storeSid`, `updated_at`) VALUES (?,?,?,NOW())";
-
-//   const [result] = await db.query(sql, [req.params.sid]);
-
-//   output.row = result[0];
-
-//   console.log(output);
-
-//   res.json(output);
-// });
-
-
-// order 資料讀取 :訂單日期-----思考要不要單獨抓日期時間--------------
-// 用在O_Reserve_Calendar
-
-router.get("/orderDate/:sid", async (req, res) => {
-  const output = {
-    row: [],
-  };
-  const sql =
-    "SELECT * FROM order_summary WHERE order_summary.orderSid=?";
-
-  const [result] = await db.query(sql, [req.params.sid]);
-
-  // output.row = result[0];
-
-  res.json(result);
-});
-
-
 // order 資料讀取 :訂單
-// 用在OrderProcess、O_Process_One、O_Process_Two
+// 用在OrderProcess
 
 router.get("/orderProcess/:sid", async (req, res) => {
   const output = {
     row: [],
   };
-  // ------------藍凱電腦上用的，好像是SQL不一樣------------***********
-  // const ordersql =
-  //   `SELECT *
-  //   FROM order_summary
-  //   JOIN games ON games.gamesSid=order_summary.gameSid
-  //   JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid
-  //   JOIN store ON games.storeSid=store.storeSid
-  //   JOIN member ON order_summary.memberSid=member.membersid
-  //   WHERE order_summary.orderSid =1677779977`
-  // -----------------自己的---------------
-  const ordersql = "SELECT * FROM order_summary JOIN games ON games.gamesSid=order_summary.gameSid JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid JOIN store ON games.storeSid=store.storeSid JOIN member ON order_summary.memberSid=member.membersid WHERE order_summary.orderSid=?";
+
+  const ordersql = "SELECT * FROM order_summary WHERE order_summary.orderSid=?";
   // *******************************************************************
   const [result] = await db.query(ordersql,[req.params.sid]);
 
@@ -204,6 +151,25 @@ router.get("/discount/:sid", async (req, res) => {
   res.json(result);
 });
 
+// order 資料讀取 :訂單日期-----思考要不要單獨抓日期時間--------------未成功
+// 用在O_Reserve_Calendar
+
+// router.get("/orderDate/:sid", async (req, res) => {
+//   const output = {
+//     row: [],
+//   };
+//   const sql =
+//   // "SELECT * FROM order_summary WHERE order_summary.gameSid=?";
+//     "SELECT * FROM order_summary WHERE order_summary.orderSid=?";
+
+//   const [result] = await db.query(sql, [req.params.sid]);
+
+//   // output.row = result[0];
+
+//   res.json(result);
+// });
+// --------------------------------------
+
 
 // 測試用
 router.get("/", (req, res) => {
@@ -211,47 +177,3 @@ router.get("/", (req, res) => {
 });
 
 module.exports = router;
-
-
-
-// ***************************測試沒成功的*******************************
-
-// 測試-遊戲介紹及書籤結合-----------------*************
-
-// router.get("/gamesinfo/:sid", async (req, res) => {
-//   const output = {
-//     row: [],
-//     collect:[]
-//   };
-//   const gamessql =
-//     "SELECT games.*,gamestime.*, store.storeAddress FROM games JOIN gamestime ON games.gamesTime=gamestime.gamesTimeSid JOIN store ON games.storeSid=store.storeSid WHERE games.gamesSid=?";
-
-//     const collectsql = "SELECT * FROM collect WHERE collectSid=?";
-
-//   const [result] = await db.query(gamessql, [req.params.sid]);
-//   const [collectResult] = await db.query(collectsql, [req.params.sid]);
-
-//   output.row = [...output.row,...result];
-//   output.collect = [...output.collect,...collectResult]
-
-//   res.json(output);
-// });
-
-// --------------------------***************
-
-
-// 書籤-舊版
-// router.get("/collect/:sid", async (req, res) => {
-//   const output = {
-//     row: {},
-//   };
-//   const sql = "SELECT * FROM collect WHERE collectSid=?";
-
-//   const [result] = await db.query(sql, [req.params.sid]);
-//   result.create_at = result.map((v, i) => {
-//     // return v.create_at=res.locals.dayFormat(result.create_at);
-//   });
-//   output.row = result;
-//   console.log(output.row);
-//   res.json(output);
-// });
