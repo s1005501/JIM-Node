@@ -17,7 +17,7 @@ router.use("/", async (req, res) => {
 const commentSql = `
 SELECT order_summary.gameSid , AVG(rate) As commentAvg,COUNT(rate) AS commentSum 
 FROM comment_ordered 
-JOIN order_summary ON order_summary.orderSid = comment_ordered.order_id 
+JOIN order_summary ON order_summary.orderSid = comment_ordered.order_sid 
 GROUP BY order_summary.gameSid;
 `
 const [comment]=await db.query(commentSql)

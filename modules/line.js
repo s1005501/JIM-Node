@@ -31,15 +31,28 @@ router
 
   .post("/createOrder/:orderId", async (req, res) => {
     const { orderId } = req.params;
-    const { sid, member, gamesid, people, cash, prod, time, date } = req.query;
+    const {
+      sid,
+      member,
+      gamesid,
+      people,
+      cash,
+      prod,
+      time,
+      date,
+      name,
+      tel,
+      email,
+      discount,
+    } = req.query;
     // const { data } = req.body;
     // const { remark, name, tel, address, email, discount } = data;
-    const remark = ''
-    const name = '玩家'
-    const tel ='0912345678'
-    const address = '地址'
-    const email = 'email'
-    const discount = '1'
+    const remark = "";
+    // const name = '玩家'
+    // const tel ='0912345678'
+    const address = "";
+    // const email = 'email'
+    // const discount = '1'
     const order = {
       amount: cash,
       currency: "TWD",
@@ -87,10 +100,11 @@ router
       const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`;
       const linePayRes = await axios.post(url, linePayBody, { headers });
       if (linePayRes?.data?.returnCode === "0000") {
-        sql = `INSERT INTO order_summary(orderSid, memberSid, gameSid, checkPrice, checkQuantity, orderState, orderTime,orderDate, orderUsername, orderPhone, orderAdress, orderEmail, orderRemark, orderDiscount, create_at) VALUES (${orderId},${member},${gamesid},${cash},${people},0,'${time}','${date}','${name}','${tel}','${address}','${email}','${remark}',${discount},now())`;
+        sql = `INSERT INTO order_summary(orderSid, memberSid, gameSid, checkPrice, checkQuantity, orderState, orderTime,orderDate, orderUsername, orderPhone, orderAdress, orderEmail, orderRemark, orderDiscount, create_at) VALUES (${orderId},${member},${gamesid},${cash},${people},0,'${time}','${date}','${name}','${tel}','${address}','${email}','${remark}','${discount}',NOW())`;
         db.query(sql);
         const linePayUrl = linePayRes.data.info.paymentUrl.web;
         res.json({ url, linePayBody, headers, linePayUrl });
+        // console.log(sql);
       } else {
       }
       res.end();

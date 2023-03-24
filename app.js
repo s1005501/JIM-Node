@@ -199,6 +199,12 @@ const insertdelete=async(sid,user)=>{
 
 }
 
+const commentdelete=async(sid)=>{
+  const sql = `DELETE FROM comment WHERE sid=${sid}`
+  await db.query(sql);
+
+}
+
 const update=async(sid,user)=>{
   const sql = `UPDATE comment_liked SET liked=0 WHERE comment_id=${sid} AND user_id=${user}`
   await db.query(sql);
@@ -446,6 +452,11 @@ app.delete("/insertdelete/:sid/:user", async (req, res) => {
  const {sid,user}=req.params
  console.log(sid)
   res.json(await insertdelete(sid,user));})
+
+  app.delete("/commentdelete/:sid", async (req, res) => {
+    const {sid}=req.params
+    console.log(sid)
+     res.json(await commentdelete(sid));})
 
   app.put("/update/:sid/:user", async (req, res) => {
     const {sid,user}=req.params

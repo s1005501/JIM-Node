@@ -35,7 +35,7 @@ router.get("/gamesinfo/:sid", async (req, res) => {
   res.json(result);
 });
 
-// 會員等級用
+// ------------------------會員等級用--------------------
 router.get("/ordermemLevel/:sid", async (req, res) => {
   const output = {
     row: [],
@@ -130,7 +130,7 @@ router.get("/orderProcess/:sid", async (req, res) => {
   res.json(result);
 });
 
-// ----------discount 資料讀取 :優惠券--測試用，好像會有問題----------------
+// ----------discount 資料讀取 :優惠券-------------
 // 使用在O_Process_Two
 
 router.get("/discount/:sid", async (req, res) => {
@@ -144,11 +144,20 @@ router.get("/discount/:sid", async (req, res) => {
     // 這是會員有優惠券的部分
     "SELECT discount.*,discount_detail.*,member.memName,member.memLevel FROM discount JOIN discount_detail ON discount.discountID=discount_detail.discountID JOIN member ON discount.membersid=member.membersid WHERE member.membersid=?";
 
+  // const [result] = await db.query(discountsql, [req.params.sid]);
+
+  // // output.row = result[0];
+
+  // res.json(result);
   const [result] = await db.query(discountsql, [req.params.sid]);
-
   // output.row = result[0];
+  console.log(result);
 
-  res.json(result);
+  const newResult = result.filter((v, i) => {
+    return v.discountState === "未使用";
+  });
+
+  res.json(newResult);
 });
 
 // order 資料讀取 :訂單日期-----思考要不要單獨抓日期時間--------------未成功
