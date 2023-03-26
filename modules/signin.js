@@ -115,13 +115,18 @@ router.post("/setmemberinfo/:target", async (req, res) => {
       county,
       address,
       email,
-      time,
+      timeStart,
+      timeEnd,
       website,
       LogoImg,
       remark,
+      lat,
+      lon
     } = req.body;
+    console.log(timeStart,timeEnd,lat,lon)
+    const time = `${timeStart}-${timeEnd}`
     setInfoSql = `
-      INSERT INTO store( storeName, storeAccount, storePassword, storeLeader, storeLeaderId, storeMobile, storeCity, storeAddress, storelat, storelon, storeEmail, storeTime, storeRest, storeWebsite, storeLogo, storeNews, storeCreatedAt, storeEditAt) VALUES ('${store}','${account}','${password}','${leader}','${identity}','${mobile}','${county}','${address}','','','${email}','${time}','','${website}','${LogoImg}','${remark}',now(),now())`;
+      INSERT INTO store( storeName, storeAccount, storePassword, storeLeader, storeLeaderId, storeMobile, storeCity, storeAddress, storelat, storelon, storeEmail, storeTime, storeRest, storeWebsite, storeLogo, storeNews, storeCreatedAt, storeEditAt) VALUES ('${store}','${account}','${password}','${leader}','${identity}','${mobile}','${county}','${address}',${lat},${lon},'${email}','${time}','','${website}','${LogoImg}','${remark}',now(),now())`;
   } else if (target == "member") {
     const {
       nick,
