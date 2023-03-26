@@ -104,7 +104,6 @@ router
         db.query(sql);
         const linePayUrl = linePayRes.data.info.paymentUrl.web;
         res.json({ url, linePayBody, headers, linePayUrl });
-        // console.log(sql);
       } else {
       }
       res.end();

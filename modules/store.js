@@ -66,12 +66,13 @@ router.post("/editStoreInfo/:storeSid", async (req, res) => {
     county,
     address,
     email,
-    time,
+    timeStart,
+    timeEnd,
     website,
     LogoImg,
     remark,
   } = req.body;
-
+const time = `${timeStart}-${timeEnd}`
   const editStoreSql = `
         UPDATE store SET storeAccount='${account}',storePassword='${password}',storeLeader='${leader}',storeMobile='${mobile}',storeCity='${county}',storeAddress='${address}',storeEmail='${email}',storeTime='${time}',storeWebsite='${website}',storeLogo='${LogoImg}',storeNews='${remark}',storeEditAt=now() WHERE storeSid = ${storeSid}
         `;
@@ -86,7 +87,9 @@ router.get("/storeInfo/:storeSid", async (req, res) => {
             SELECT * FROM store WHERE storeSid = ${storeSid}
             `;
   const [storeInfoInfo] = await db.query(storeInfoSql);
-
+console.log(storeInfoInfo[0].storeTime.split('-')[0])
+storeInfoInfo[0].timeStart = storeInfoInfo[0].storeTime.split('-')[0]
+storeInfoInfo[0].timeEnd = storeInfoInfo[0].storeTime.split('-')[1]
   // const storeInfoData = storeInfoInfo.map((v, i) => {
   //   if (v.storeLogo.length > 20) {
   //     local_img = `./public/uploads/${v.storeLogo}`;
@@ -97,7 +100,7 @@ router.get("/storeInfo/:storeSid", async (req, res) => {
   //     return { ...v };
   //   }
   // });
-  
+  console.log(storeInfoInfo);
   res.json(storeInfoInfo);
 });
 

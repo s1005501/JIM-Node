@@ -14,11 +14,14 @@ router.use("/", async (req, res) => {
   const storesql =
     "SELECT `storeSid`,`storeName`,`storeMobile`,`storeCity`,`storeAddress`,`storelat`,`storelon`,`storeTime`,`storeRest`,`storeLogo` FROM `store` WHERE 1";
   const [store] = await db.query(storesql);
+// const commentSql = `
+// SELECT order_summary.gameSid , AVG(rate) As commentAvg,COUNT(rate) AS commentSum 
+// FROM comment_ordered 
+// JOIN order_summary ON order_summary.orderSid = comment_ordered.order_sid 
+// GROUP BY order_summary.gameSid;
+// `
 const commentSql = `
-SELECT order_summary.gameSid , AVG(rate) As commentAvg,COUNT(rate) AS commentSum 
-FROM comment_ordered 
-JOIN order_summary ON order_summary.orderSid = comment_ordered.order_sid 
-GROUP BY order_summary.gameSid;
+SELECT games_id, COUNT(games_id) AS commentSum, AVG(comment.rate) AS commentAvg FROM comment GROUP BY games_id
 `
 const [comment]=await db.query(commentSql)
 
@@ -35,17 +38,28 @@ const [comment]=await db.query(commentSql)
   const imgdeal = store.map((v, i) => {
 return v
   });
+  // const commentDeal = game.map((v, i) => {
+  //   const filters = comment.filter((e, j) => {
+  //     if (v.gamesSid  === e.gameSid) {
+  //       return {...e};
+  //     }
+  //   });
+  //   return { ...v, 
+  //     commentAvg: filters[0]?.commentAvg,
+  //     commentSum:filters[0]?.commentSum };
+  // });
+
   const commentDeal = game.map((v, i) => {
     const filters = comment.filter((e, j) => {
-      if (v.gamesSid  === e.gameSid) {
+      if (v.gamesSid  === e.games_id) {
+        console.log(e.commentAvg)
         return {...e};
       }
     });
     return { ...v, 
-      commentAvg: filters[0]?.commentAvg,
+      commentAvg:filters[0]?.commentAvg,
       commentSum:filters[0]?.commentSum };
   });
-
   const merge = imgdeal.map((v, i) => {
     const filters = commentDeal.filter((e, i) => {
       if (v.storeSid === e.storeSid) {
@@ -54,7 +68,6 @@ return v
     });
     return { ...v, game: filters };
   });
-  console.log(commentDeal)
   res.json(merge);
 });
 
