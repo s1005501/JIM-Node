@@ -70,11 +70,10 @@ router.put("/register", async (req, res) => {
     req.body.mMobile,
     req.body.mIdentity,
   ]);
-  if (!result) {
-    output.code = 401;
-    output.error = "此帳號已被使用";
-    return res.json(output);
-  } else {
+  console.log(result.insertId);
+  if (result) {
+      const randSql ="INSERT INTO `discount`(`discountID`, `membersid`) VALUES (22,?)";
+      const randResult=db.query(randSql,[result.insertId])
     output.success = true;
     output.code = 200;
     output.error = "";

@@ -158,6 +158,26 @@ router.get("/discount/:sid", async (req, res) => {
   });
 
   res.json(newResult);
+    
+});
+
+// 如已使用優惠券就傳到資料庫-----未完成----
+router.post("/order/:sid", async (req, res) => {
+  const { orderId, couponId } = req.body;
+  
+  // 將使用的折價券的狀態改為已使用
+  const updateCouponSql = "UPDATE discount SET discountState = '已使用' WHERE discountID = ?";
+  await db.query(updateCouponSql, [couponId]);
+
+  // 處理訂單，這裡假設訂單已經被處理完畢，並回傳訂單資訊
+  const order = {
+    orderId,
+    couponId,
+    // 其他訂單資訊...
+  }
+  res.json(order);
+  // ------------------上列待修----------
+  
 });
 
 // order 資料讀取 :訂單日期-----思考要不要單獨抓日期時間--------------未成功
