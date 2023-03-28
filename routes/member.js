@@ -72,7 +72,7 @@ router.put("/register", async (req, res) => {
   ]);
   console.log(result.insertId);
   if (result) {
-      const randSql ="INSERT INTO `discount`(`discountID`, `membersid`) VALUES (22,?)";
+    const randSql ="INSERT INTO `discount`(`discountID`, `membersid`,`discountState`) VALUES (22,?,'未使用')";
       const randResult=db.query(randSql,[result.insertId])
     output.success = true;
     output.code = 200;
