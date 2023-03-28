@@ -52,7 +52,6 @@ return v
   const commentDeal = game.map((v, i) => {
     const filters = comment.filter((e, j) => {
       if (v.gamesSid  === e.games_id) {
-        console.log(e.commentAvg)
         return {...e};
       }
     });
