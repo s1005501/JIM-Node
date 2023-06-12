@@ -9,8 +9,8 @@ React terminal 啟動：yarn start
 Node.js terminal 啟動：nodemon
 
 會員中心、登入功能可用以下組別的帳密完成登入功能
-會員帳號：kevin54321
-會員密碼：kevin54321
+會員帳號：july123
+會員密碼：july123
 
 個人專題負責部分
 
