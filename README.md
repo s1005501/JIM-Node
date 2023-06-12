@@ -4,10 +4,13 @@
 
 部分功能無法使用(因為 API 需要金鑰才能運作，但推上來有風險，所以這部分請見諒)
 
+前後端 terminal 啟動方式：
+React terminal 啟動：yarn start
+Node.js terminal 啟動：nodemon
+
 會員中心、登入功能可用以下組別的帳密完成登入功能
 會員帳號：kevin54321
 會員密碼：kevin54321
-
 
 個人專題負責部分
 
