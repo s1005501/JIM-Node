@@ -140,8 +140,8 @@ router.post("/login", async (req, res) => {
     output.memHeadshot = result[0].memHeadshot;
     output.memVerified = result[0].memVerified;
   }
-  // console.log(output);
-  // console.log(result);
+  console.log(output);
+  console.log(result);
   res.json(output);
 });
 
