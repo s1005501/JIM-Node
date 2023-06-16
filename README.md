@@ -12,6 +12,8 @@ Node.js terminal 啟動：nodemon
 會員帳號：july123
 會員密碼：july123
 
+如果專案開啟後，開頭的互動小遊戲無法正常使用的話，請幫我點擊左上角的SKIP按鍵，即可跳回專案首頁，感謝
+
 個人專題負責部分
 
 1.使用 mySQL phpmyadmin 協助建立專案資料庫
